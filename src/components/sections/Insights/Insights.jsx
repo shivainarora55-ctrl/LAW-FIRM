@@ -52,7 +52,7 @@ export default function Insights() {
             </div>
             <h3 className="mt-4 text-xl font-bold leading-snug">{title}</h3>
             <p className="mt-3 flex-1 text-muted">{excerpt}</p>
-            <Link href={`/insights/${slug}`} className="mt-6 inline-flex items-center gap-1 font-semibold transition-colors hover:text-brand-red active:text-brand-red-dark">
+            <Link href={type === "Article" ? `/articles/${slug}` : `/blogs/${slug}`} className="mt-6 inline-flex items-center gap-1 font-semibold transition-colors hover:text-brand-red active:text-brand-red-dark">
               Read more <FiArrowUpRight aria-hidden />
             </Link>
           </article>

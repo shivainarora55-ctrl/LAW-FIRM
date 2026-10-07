@@ -5,6 +5,13 @@ export default function About() {
   return (
     <Section id="about" tone="white">
       <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="mx-auto w-full max-w-md lg:max-w-none">
+          {/* PLACEHOLDER: replace with <Image src="/images/lawyer.jpg" alt="..." fill className="object-cover" /> inside this box */}
+          <div className="relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl border-b-8 border-brand-red bg-soft-gray text-muted">
+            Lawyer photo
+          </div>
+        </div>
+
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-red">About Us</p>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl lg:text-5xl">
@@ -34,12 +41,6 @@ export default function About() {
           </figure>
         </div>
 
-        <div className="mx-auto w-full max-w-md lg:max-w-none">
-          {/* PLACEHOLDER: replace with <Image src="/images/lawyer.jpg" alt="..." fill className="object-cover" /> inside this box */}
-          <div className="relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl border-b-8 border-brand-red bg-soft-gray text-muted">
-            Lawyer photo
-          </div>
-        </div>
       </div>
     </Section>
   );
