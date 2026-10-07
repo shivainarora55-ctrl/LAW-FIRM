@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { FiArrowUpRight } from "react-icons/fi";
 import Section from "@/components/ui/Section/Section";
-import { INSIGHTS } from "@/constants/insights";
 
 const TABS = [
   { value: "All", label: "All" },
@@ -12,9 +11,9 @@ const TABS = [
   { value: "Blog", label: "Blogs" },
 ];
 
-export default function Insights() {
+export default function Insights({ insights }) {
   const [tab, setTab] = useState("All");
-  const visible = tab === "All" ? INSIGHTS : INSIGHTS.filter((i) => i.type === tab);
+  const visible = tab === "All" ? insights : insights.filter((i) => i.type === tab);
 
   return (
     <Section id="insights" tone="white">
@@ -43,12 +42,12 @@ export default function Insights() {
         </div>
       </div>
 
-      <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {visible.length === 0 ? <p className="mt-8 border-t border-line py-6 text-muted">New articles coming soon.</p> : <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {visible.map(({ slug, type, title, date, excerpt }) => (
           <article key={slug} className="group flex flex-col rounded-lg border border-line p-6 transition-colors duration-200 hover:border-brand-red">
             <div className="flex items-center justify-between text-sm">
               <span className="font-semibold text-brand-red">{type}</span>
-              <span className="text-muted">{date}</span>
+              <time className="text-muted" dateTime={date}>{date}</time>
             </div>
             <h3 className="mt-4 text-xl font-bold leading-snug">{title}</h3>
             <p className="mt-3 flex-1 text-muted">{excerpt}</p>
@@ -57,7 +56,7 @@ export default function Insights() {
             </Link>
           </article>
         ))}
-      </div>
+      </div>}
     </Section>
   );
 }

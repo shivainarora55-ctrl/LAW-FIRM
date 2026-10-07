@@ -4,9 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { FiMenu, FiX } from "react-icons/fi";
 import Container from "@/components/ui/Container/Container";
-import Button from "@/components/ui/Button/Button";
+import AuthButton from "@/components/auth/AuthButton/AuthButton";
 import Logo from "@/components/layout/Logo/Logo";
-import { NAV_LINKS, AUTH_LINK } from "@/constants/site";
+import { NAV_LINKS } from "@/constants/site";
 
 const navItem =
   "rounded-md px-4 py-2 text-[15px] font-medium text-white transition-colors duration-200 hover:text-brand-red-light active:bg-brand-red active:text-white";
@@ -25,7 +25,7 @@ export default function Header() {
           {NAV_LINKS.map(({ label, href }) => (
             <Link key={label} href={href} className={navItem}>{label}</Link>
           ))}
-          <Button href={AUTH_LINK.href} variant="red" className="ml-3">{AUTH_LINK.label}</Button>
+          <AuthButton className="ml-3" />
         </nav>
 
         {/* Mobile menu toggle */}
@@ -48,7 +48,7 @@ export default function Header() {
             {NAV_LINKS.map(({ label, href }) => (
               <Link key={label} href={href} onClick={close} className={`${navItem} py-3`}>{label}</Link>
             ))}
-            <Button href={AUTH_LINK.href} variant="red" onClick={close} className="mt-2 w-full">{AUTH_LINK.label}</Button>
+            <AuthButton onClick={close} className="mt-2 w-full" />
           </Container>
         </nav>
       )}

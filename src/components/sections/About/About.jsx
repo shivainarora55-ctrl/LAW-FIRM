@@ -11,10 +11,10 @@ export default function About() {
             Trusted counsel, built on decades of practice
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-muted">
-            Replace this with the firm's story: when it was founded, who leads it, and the kinds of clients and matters it serves.
+            Replace this with the firm&apos;s story: when it was founded, who leads it, and the kinds of clients and matters it serves.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-muted">
-            Add a second paragraph on the firm's approach, values and what clients can expect when they work with the team.
+            Add a second paragraph on the firm&apos;s approach, values and what clients can expect when they work with the team.
           </p>
 
           <figure className="mt-10 rounded-2xl rounded-bl-none bg-brand-red p-6 text-white shadow-lg">

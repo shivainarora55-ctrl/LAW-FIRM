@@ -34,3 +34,16 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Deployment notes
+
+The current JSON storage layer requires a persistent disk. It works on a VPS or on Render or Railway when a persistent disk is attached and `DATA_DIR` points to that disk. Serverless hosts such as Vercel use read-only or ephemeral filesystems; replace `src/lib/storage` with a database and cloud file storage before deploying there.
+
+Required environment variables:
+
+- `SESSION_SECRET`: at least 32 random bytes encoded as hexadecimal.
+- `ADMIN_SESSION_SECRET`: a separate 32-byte-or-longer random hexadecimal secret for lawyer sessions.
+- `DATA_DIR`: storage directory; defaults to `./data`.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`: SMTP settings for email OTP delivery. All five are required to send email in production.
+
+Lawyers are provisioned locally by an authorised operator; there is no public lawyer registration route. Run `npm run create-admin` to create an account or update an existing lawyer password. The script reads `.env.local` and stores only a bcrypt hash in `DATA_DIR/admins.json`.
