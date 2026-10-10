@@ -37,13 +37,16 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Deployment notes
 
-The current JSON storage layer requires a persistent disk. It works on a VPS or on Render or Railway when a persistent disk is attached and `DATA_DIR` points to that disk. Serverless hosts such as Vercel use read-only or ephemeral filesystems; replace `src/lib/storage` with a database and cloud file storage before deploying there.
+Set `STORAGE_DRIVER=json` (the default) to use JSON files, which require a persistent disk. On a VPS or a host with a persistent volume, point `DATA_DIR` at that disk. Set `STORAGE_DRIVER=supabase` to use the configured Supabase database and private storage buckets; with this driver, no persistent disk is needed.
 
 Required environment variables:
 
 - `SESSION_SECRET`: at least 32 random bytes encoded as hexadecimal.
 - `ADMIN_SESSION_SECRET`: a separate 32-byte-or-longer random hexadecimal secret for lawyer sessions.
 - `DATA_DIR`: storage directory; defaults to `./data`.
+- `STORAGE_DRIVER`: `json` (default) or `supabase`.
+- `SUPABASE_URL`: required when `STORAGE_DRIVER=supabase`.
+- `SUPABASE_SECRET_KEY`: required when `STORAGE_DRIVER=supabase`; keep this server-side secret out of client bundles.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`: SMTP settings for email OTP delivery. All five are required to send email in production.
 
-Lawyers are provisioned locally by an authorised operator; there is no public lawyer registration route. Run `npm run create-admin` to create an account or update an existing lawyer password. The script reads `.env.local` and stores only a bcrypt hash in `DATA_DIR/admins.json`.
+Lawyers are provisioned by an authorised operator; there is no public lawyer registration route. Run `npm run create-admin` to create an account or update an existing lawyer password. The script reads `.env.local` and stores only a bcrypt hash in `DATA_DIR/admins.json` when using JSON storage, or in the `admins` table when using Supabase storage.

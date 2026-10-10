@@ -4,6 +4,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { mkdir, open, readFile, rename, unlink } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
+import { createClient } from "@supabase/supabase-js";
 
 const dataDirectory = resolve(process.cwd(), process.env.DATA_DIR || "./data");
 const adminsPath = join(dataDirectory, "admins.json");
@@ -87,9 +88,22 @@ async function main() {
     prompt.close();
     if (name.length < 2 || !/^\S+@\S+\.\S+$/.test(email)) throw new Error("Enter a valid name and email address.");
 
-    const admins = await readAdmins();
-    const existingIndex = admins.findIndex((admin) => admin.email === email);
-    if (existingIndex >= 0) {
+    const driver = process.env.STORAGE_DRIVER || "json";
+    if (!["json", "supabase"].includes(driver)) throw new Error("STORAGE_DRIVER must be json or supabase.");
+    let supabase;
+    if (driver === "supabase") {
+      if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) throw new Error("SUPABASE_URL and SUPABASE_SECRET_KEY are required when STORAGE_DRIVER=supabase.");
+      supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+    }
+    const admins = driver === "json" ? await readAdmins() : null;
+    let existingIndex = driver === "json" ? admins.findIndex((admin) => admin.email === email) : -1;
+    let existingAdmin = existingIndex >= 0 ? admins[existingIndex] : null;
+    if (driver === "supabase") {
+      const { data, error } = await supabase.from("admins").select("id,name,email,role,password_hash,created_at").ilike("email", email).limit(1);
+      if (error) throw new Error("Could not look up the lawyer in Supabase.");
+      existingAdmin = data[0] ? { id: data[0].id, name: data[0].name, email: data[0].email, role: data[0].role, passwordHash: data[0].password_hash, createdAt: data[0].created_at } : null;
+    }
+    if (existingAdmin) {
       const confirmPrompt = createInterface({ input: stdin, output: stdout });
       const confirmation = await confirmPrompt.question(`An admin already exists for ${email}. Update this password? (y/N) `);
       confirmPrompt.close();
@@ -105,12 +119,25 @@ async function main() {
     const passwordHash = await bcrypt.hash(password, 12);
     password = "";
     const now = new Date().toISOString();
-    const record = existingIndex >= 0
-      ? { ...admins[existingIndex], name, email, role: "lawyer", passwordHash }
+    const record = existingAdmin
+      ? { ...existingAdmin, name, email, role: "lawyer", passwordHash }
       : { id: randomUUID(), name, email, role: "lawyer", passwordHash, createdAt: now };
-    admins[existingIndex >= 0 ? existingIndex : admins.length] = record;
-    await writeAdminsAtomically(admins);
-    console.log(`Admin ${existingIndex >= 0 ? "password updated" : "created"} for ${email}.`);
+    if (driver === "json") {
+      admins[existingIndex >= 0 ? existingIndex : admins.length] = record;
+      await writeAdminsAtomically(admins);
+    } else {
+      const databaseRecord = { name: record.name, email: record.email, role: "lawyer", password_hash: record.passwordHash };
+      const result = existingAdmin
+        ? await supabase.from("admins").update(databaseRecord).eq("id", existingAdmin.id)
+        : await supabase.from("admins").insert({ id: record.id, ...databaseRecord });
+      if (result.error) {
+        console.error("Supabase admin write failed", { code: result.error.code || "unknown" });
+        if (result.error.code === "23505") throw new Error("A lawyer already exists for this email.");
+        if (result.error.code === "23503") throw new Error("A related record is unavailable.");
+        throw new Error("Could not save the lawyer to Supabase.");
+      }
+    }
+    console.log(`Admin ${existingAdmin ? "password updated" : "created"} for ${email}.`);
   } finally {
     prompt.close();
   }

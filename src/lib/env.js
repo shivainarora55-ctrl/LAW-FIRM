@@ -2,8 +2,12 @@ import "server-only";
 import { z } from "zod";
 
 const optionalValue = z.preprocess((value) => value === "" ? undefined : value, z.string().optional());
+const optionalUrl = z.preprocess((value) => value === "" ? undefined : value, z.string().url().optional());
 
 const environmentSchema = z.object({
+  STORAGE_DRIVER: z.enum(["json", "supabase"]).default("json"),
+  SUPABASE_URL: optionalUrl,
+  SUPABASE_SECRET_KEY: optionalValue,
   SESSION_SECRET: optionalValue,
   ADMIN_SESSION_SECRET: optionalValue,
   DATA_DIR: z.string().trim().default("./data"),
@@ -21,6 +25,9 @@ export function getEnv() {
   }
 
   const env = result.data;
+  if (env.STORAGE_DRIVER === "supabase" && (!env.SUPABASE_URL || !env.SUPABASE_SECRET_KEY)) {
+    throw new Error("SUPABASE_URL and SUPABASE_SECRET_KEY are required when STORAGE_DRIVER=supabase.");
+  }
   if (process.env.NODE_ENV === "production" && !env.SESSION_SECRET) {
     throw new Error("SESSION_SECRET is required in production. Set it to at least 32 random bytes encoded as hexadecimal.");
   }

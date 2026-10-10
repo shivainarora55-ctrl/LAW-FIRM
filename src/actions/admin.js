@@ -155,6 +155,7 @@ export async function createAppointment(_previousState, formData) {
     revalidatePath("/portal");
   } catch (error) {
     console.error("Appointment creation failed:", error.message);
+    if (error.message === "This time overlaps another appointment.") return fail(error.message, { startsAt: "Choose a different time." });
     return fail("We could not schedule that appointment.");
   }
   if (created) redirect(`/admin/appointments/${created.id}`);

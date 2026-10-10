@@ -42,12 +42,15 @@ export async function POST(request) {
       sharedWithClient: true,
       uploadedAt: new Date().toISOString(),
     };
-    const created = await documents.createDocument(metadata, MAX_DOCUMENTS_PER_USER);
-    if (!created) return safeMessage(400, "You have reached the 50-document limit.");
+    await fileStore.saveUpload(user.id, storedName, Buffer.from(await file.arrayBuffer()), file.type);
     try {
-      await fileStore.saveUpload(user.id, storedName, Buffer.from(await file.arrayBuffer()));
+      const created = await documents.createDocument(metadata, MAX_DOCUMENTS_PER_USER);
+      if (!created) {
+        await fileStore.deleteUpload(user.id, storedName).catch(() => {});
+        return safeMessage(400, "You have reached the 50-document limit.");
+      }
     } catch (error) {
-      await documents.deleteDocumentForUser(id, user.id).catch(() => {});
+      await fileStore.deleteUpload(user.id, storedName).catch(() => {});
       throw error;
     }
     return NextResponse.json({ ok: true, document: metadata }, { status: 201, headers: { "Cache-Control": "no-store" } });

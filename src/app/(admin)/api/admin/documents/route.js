@@ -31,7 +31,7 @@ export async function POST(request) {
     const id = randomUUID();
     const storedName = randomUUID();
     const metadata = { id, userId: client.id, matterId: matterId || null, originalName, storedName, mimeType: file.type, size: file.size, uploadedBy: "firm", uploadedByAdminId: admin.id, sharedWithClient: formData.get("sharedWithClient") === "on", uploadedAt: new Date().toISOString() };
-    await fileStore.saveUpload(client.id, storedName, Buffer.from(await file.arrayBuffer()));
+    await fileStore.saveUpload(client.id, storedName, Buffer.from(await file.arrayBuffer()), file.type);
     try {
       await documents.createDocument(metadata);
     } catch (error) {
